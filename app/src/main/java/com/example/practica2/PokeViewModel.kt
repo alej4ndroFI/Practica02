@@ -12,17 +12,18 @@ class PokeViewModel : ViewModel() {
     val uiState: StateFlow<String> = _uiState.asStateFlow()
 
     init {
-        obtenerDatosApi()
+        obtenerDatosApi("gengar") // "lucario", "1", "151", etc.
     }
 
-    // Ejecuta la petición en un hilo secundario (Corrutina) para evitar el bloqueo del hilo principal (UI Thread).
-    private fun obtenerDatosApi() {
+    fun obtenerDatosApi(nombreOId: String) {
         viewModelScope.launch {
+            _uiState.value = "Buscando..." // Feedback visual de carga
             try {
-                val resultado = PokeApi.retrofitService.getPokemon()
+                // .lowercase().trim() evita errores si el usuario pone espacios o mayúsculas
+                val resultado = PokeApi.retrofitService.getPokemon(nombreOId.lowercase().trim())
                 _uiState.value = "Elemento obtenido de la API:\nNombre: ${resultado.name.uppercase()}\nAltura: ${resultado.height}\nPeso: ${resultado.weight}"
             } catch (e: Exception) {
-                _uiState.value = "Error de conexión: ${e.message}"
+                _uiState.value = "Error: No se encontró el Pokémon o falló la conexión."
             }
         }
     }
